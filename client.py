@@ -1,6 +1,6 @@
 import socket, uuid, random, string
 
-IP = socket.gethostbyname(socket.gethostname())
+IP = 'localhost'
 PORT = 8000
 PORT1 = 8001
 
@@ -10,6 +10,7 @@ def send_id_and_rec_key():
     client.connect((IP, PORT))  # устанавливаем данные для прослушивания данного порта
     client.send(id_client.encode('utf8'))
     key = client.recv(1024)  # получаем ключ
+    print(key)
     return key
 
 
@@ -19,9 +20,9 @@ def send_message(key):
     symbols = string.punctuation + string.ascii_uppercase + string.ascii_lowercase + string.digits
     message = ''.join(random.sample(symbols, random.randint(10, 30)))  # генерируем рандомное текстовое сообщение
     print('message = ', message)
-    client.send(message.encode('utf8'))
-    client.send(id_client.encode('utf8'))
-    client.send(key)
+    client.sendall((message + ' ').encode('utf8'))
+    client.sendall((id_client + ' ').encode('utf8'))
+    client.sendall(key)
 
 
 if __name__ == '__main__':
