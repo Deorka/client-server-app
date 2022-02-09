@@ -1,26 +1,20 @@
-import socketserver, random, string
+import socketserver
+from utils import file_data_to_dictionary, generate_key, NAME_DB
 
 HOST, PORT = "localhost", 8000
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
-    symbols = string.digits + string.ascii_uppercase + string.ascii_lowercase
-
     def handle(self):
-        self.data = self.request.recv(1024).strip()
-        print("{} wrote:".format(self.client_address[0]))
-        print(self.data)
-        client = {}
-        with open('clients.txt') as c:
-            for line in c:
-                client.update({line.split(' ')[0]: line.split(' ')[1]})
+        client_id = self.request.recv(1024).strip()
+        client = file_data_to_dictionary()
 
-        clients = open('clients.txt', 'a')
-        if self.data not in client.keys():
-            key = ''.join(random.sample(self.symbols, 8))  # сгенерировать код новому клиенту
-            d = self.data.decode('utf8')
-            clients.write(f'{d} {key}\n')
-            self.request.sendall(key.encode('utf8'))
+        with open(NAME_DB, 'a') as clients:
+            if client_id not in client.keys():
+                key = generate_key(10)  # сгенерировать код новому клиенту
+                d = client_id.decode('utf8')
+                clients.write(f'{d} {key}\n')
+                self.request.sendall(key.encode('utf8'))
 
 
 if __name__ == "__main__":

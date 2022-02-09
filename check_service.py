@@ -1,31 +1,23 @@
-import socketserver, string, logging, os
+import socketserver, logging
+from utils import file_data_to_dictionary
 
 HOST, PORT = "localhost", 8001
 
 
 class MyTCPHandler(socketserver.BaseRequestHandler):
-    symbols = string.digits + string.ascii_uppercase + string.ascii_lowercase
-
     def handle(self):
-        client = {}
-        if os.stat("clients.txt").st_size > 5:
-            with open('clients.txt') as c:
-                for line in c:
-                    client.update({line.split(' ')[0]: line.split(' ')[1]})
+        client = file_data_to_dictionary()
 
-        clients = open('clients.txt', 'a')
-        message, id_client, key_client = self.request.recv(1024).strip().decode('utf8').split(
-            ' ')  # получить 1024 байт данных
-
-        print(key_client, '\n')
+        r = self.request.recv(1024)
+        message, id_client, key_client = r.strip().decode('utf8').split(' ')  # получить данные
 
         if id_client in client.keys():
             if client[id_client].strip() == key_client:
                 logging.info(message)
             else:
-                logging.error("Wrong key")
+                self.request.send("Wrong key".encode('utf8'))
         else:
-            logging.error("Get the key first")
+            self.request.send("Get the key first".encode('utf8'))
 
 
 if __name__ == "__main__":
